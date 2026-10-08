@@ -83,7 +83,7 @@ streamlit_app.py     interactive interface
 
 ## 4. Run it (VS Code)
 
-1. Install **Python 3.12** and VS Code with the *Python* extension. Open the folder in VS Code.
+1. Install **Python 3.13** (the version all results were produced with) and VS Code with the *Python* extension. Open the folder in VS Code.
 2. Terminal (`Ctrl+\``):
    ```bash
    python -m venv .venv
@@ -114,7 +114,7 @@ out = run_one("my", "covariate", "mcd", 0, cfg, stream=st)
 1. Create a GitHub repository and push this folder (VS Code: *Source Control* → *Publish to GitHub*, or
    `git init && git add . && git commit -m "initial" && git branch -M main && git remote add origin <url> && git push -u origin main`).
 2. Go to <https://share.streamlit.io> → **Create app** → choose the repo, branch `main`, main file `streamlit_app.py`.
-3. **Advanced settings → Python 3.12.** Deploy. The first build takes a few minutes (CPU-only PyTorch is
+3. **Advanced settings → Python 3.13.** Deploy. The first build takes a few minutes (CPU-only PyTorch is
    pulled through the extra index in `requirements.txt`).
 4. The *Research results* tab reads the committed `results/` and `figures/`, so run the grid locally and commit them first.
 

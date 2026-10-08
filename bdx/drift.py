@@ -78,6 +78,13 @@ def build_stream(tab: D.Tabular, drift_type: str, seed: int, cfg: dict) -> Strea
     t0, width = cfg["t0"], cfg["width"]
     X, y = tab.X, tab.y
     N = len(X)
+    # Small datasets (e.g. an uploaded CSV): shrink train/calibration so that at least ~25 % of the records
+    # (of the in-distribution part for covariate drift) remain for the stream. The paper's datasets are large
+    # enough that this never triggers, so their results are unchanged.
+    avail = int(N * cfg.get("region_q", 0.75)) if drift_type == "covariate" else N
+    if n_train + n_cal > 0.8 * avail:
+        n_train = max(50, int(0.5 * avail))
+        n_cal = max(30, int(0.25 * avail))
 
     # ---- natural stream: keep the time order, no injected drift, no ground-truth onset
     if tab.natural_order:

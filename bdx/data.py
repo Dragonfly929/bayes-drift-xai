@@ -137,6 +137,7 @@ def encode_frame(df: pd.DataFrame, target: str, drop=None, name="custom", natura
     for c in (drop or []):
         if c in df.columns:
             df = df.drop(columns=c)
+    df = df[df[target].notna()].reset_index(drop=True)     # records without a label cannot be scored
     y_raw = df.pop(target)
     # coerce numeric-looking strings (e.g. Telco TotalCharges contains blanks)
     for c in df.columns:

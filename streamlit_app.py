@@ -44,13 +44,13 @@ def cached_tab(key):
 
 
 @st.cache_resource(show_spinner="Training the model and running all detectors …", max_entries=8)
-def run_cached(dataset, drift, model, seed, cfg_json, upload_bytes=None, target=None):
+def run_cached(dataset, drift, model, seed, cfg_json, upload_bytes=None, target=None, drop_json="[]"):
     from bdx.experiment import run_one
     cfg = json.loads(cfg_json)
     tab = None
     if dataset == "upload":
         import io
-        tab = D.load_csv(io.BytesIO(upload_bytes), target, name="upload")
+        tab = D.load_csv(io.BytesIO(upload_bytes), target, drop=json.loads(drop_json), name="upload")
         if not tab.numeric_idx:
             tab.numeric_idx = list(range(tab.X.shape[1]))
     elif dataset in D.SPECS:
@@ -66,14 +66,29 @@ ds_names = {"credit": "Credit default (finance, UCI)", "telco": "Telco churn (cu
             "digits": "Digits 8×8 rotation (MNIST-like)", "sea": "SEA synthetic (real drift)",
             "elec2": "Elec2 electricity (natural drift)", "upload": "📤 Upload your own CSV"}
 dataset = st.sidebar.selectbox("Dataset", list(ds_names), format_func=ds_names.get)
-upload_bytes, target = None, None
+upload_bytes, target, drop_cols, upload_ok = None, None, [], True
 if dataset == "upload":
     up = st.sidebar.file_uploader("CSV file (one row per record, one label column)", type=["csv"])
     if up is not None:
         upload_bytes = up.getvalue()
         import io
-        cols = list(pd.read_csv(io.BytesIO(upload_bytes), nrows=5).columns)
-        target = st.sidebar.selectbox("Label column", cols, index=len(cols) - 1)
+        df_up = pd.read_csv(io.BytesIO(upload_bytes))
+        cols = list(df_up.columns)
+        target = st.sidebar.selectbox("Label column (what the model predicts)", cols, index=len(cols) - 1)
+        # columns that would only add noise: identifiers and free text (almost one value per row)
+        guess = [c for c in cols if c != target and (c.lower() in ("id", "index", "unnamed: 0") or c.lower().endswith("id")
+                 or (df_up[c].dtype == object and df_up[c].nunique() > 0.5 * len(df_up)))]
+        drop_cols = st.sidebar.multiselect("Columns to ignore (IDs, dates, free text)",
+                                           [c for c in cols if c != target], default=guess)
+        n_cls = df_up[target].nunique()
+        st.sidebar.caption(f"{len(df_up):,} rows · {len(cols) - 1 - len(drop_cols)} input columns · "
+                           f"{n_cls} label classes")
+        if n_cls < 2 or n_cls > 20:
+            upload_ok = False
+            st.sidebar.error("The label column must have 2–20 classes (classification). "
+                             "For a numeric target, bin it into classes first.")
+        elif len(df_up) < 1000:
+            st.sidebar.warning("Fewer than 1 000 rows: the run works, but results will be noisy.")
 
 allowed = {"digits": ["covariate", "none"], "sea": ["real", "none"], "elec2": ["natural"]}.get(
     dataset, ["covariate", "sensor", "real", "none"])
@@ -147,15 +162,16 @@ D -> I -> M -> U -> A -> X -> R; M -> S -> R; A -> R; }
 
 # ============================================================================ live experiment
 with tabs[1]:
-    if dataset == "upload" and upload_bytes is None:
-        st.warning("Upload a CSV in the sidebar first.")
+    if dataset == "upload" and (upload_bytes is None or not upload_ok):
+        st.warning("Upload a CSV in the sidebar first." if upload_bytes is None else
+                   "Choose a label column with 2–20 classes in the sidebar.")
     elif run_btn or st.session_state.get("last_key"):
-        key = (dataset, drift, model, int(seed), json.dumps(cfg, sort_keys=True), target)
+        key = (dataset, drift, model, int(seed), json.dumps(cfg, sort_keys=True), target, json.dumps(sorted(drop_cols)))
         if run_btn:
             st.session_state["last_key"] = key
         key = st.session_state["last_key"]
         out = run_cached(key[0], key[1], key[2], key[3], key[4], upload_bytes if key[0] == "upload" else None,
-                         key[5])
+                         key[5], key[6])
         st.session_state["last_out"] = out
         tr = out["traces"]
         stt = tr["stream"]
