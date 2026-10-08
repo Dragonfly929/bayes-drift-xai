@@ -1,0 +1,51 @@
+# Single source of truth for every experiment in the paper. Change here, re-run, and results/ is rebuilt.
+seeds: [0, 1, 2, 3, 4]
+n_train: 3000          # training records (static model, as deployed)
+n_cal: 1000            # calibration records: z-scoring, threshold calibration, reference accuracy
+stream_len: 6000       # monitored stream length
+t0: 2500               # drift onset (ground truth)
+width: 1500            # gradual ramp length (0 = abrupt)
+natural_len: 15000     # Elec2 natural stream length
+n_drift_features: 2    # features affected by covariate / sensor drift
+region_q: 0.75         # covariate drift: novel segment = top 25% of the drift-feature score
+sensor_delta: 2.0      # sensor drift: shift in training standard deviations
+flip_rho: 0.7          # real drift: label-flip probability inside the affected region
+max_angle: 40.0        # digits rotation (degrees)
+ratio_eps: 1.0e-4      # LR = log(EU+eps) - log(AU+eps)
+
+model:
+  hidden: [64, 64]
+  dropout: 0.2
+  epochs: 60
+  weight_decay: 1.0e-4   # L2 = Gaussian prior on weights -> MAP estimate
+  T: 30                  # MC-Dropout samples
+  M: 5                   # deep-ensemble members
+  B: 10                  # bootstrap SVMs
+  svm_max_train: 1500
+
+detectors:
+  batch: 50
+  target_far: 0.10       # max probability of >=1 false alarm on a whole stationary stream
+  calib_len: null        # null = same length as the monitored stream
+  calib_reps: 10
+  label_delay: 0         # labels arrive this many samples late (supervised detectors only)
+  ks_window: 200
+
+evaluation:
+  W: 300                 # trailing window for the visible accuracy drop
+  z: 3.0
+
+grid:
+  tabular_datasets: [credit, telco]
+  tabular_drifts: [none, covariate, sensor, real]
+  extra: [[digits, none], [digits, covariate], [sea, none], [sea, real]]
+  models: [mcd, ens, bsvm]
+  abrupt: [[credit, covariate], [credit, sensor], [digits, covariate]]   # width=0 ablation
+
+xai:
+  datasets: [credit, telco]
+  drifts: [covariate, sensor, real]
+  seeds: [0, 1, 2, 3, 4]
+  n_explain: 40
+  kernel_nsamples: 300
+  background: 40

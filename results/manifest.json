@@ -1,0 +1,148 @@
+{
+  "config": {
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "n_train": 3000,
+    "n_cal": 1000,
+    "stream_len": 6000,
+    "t0": 2500,
+    "width": 1500,
+    "natural_len": 15000,
+    "n_drift_features": 2,
+    "region_q": 0.75,
+    "sensor_delta": 2.0,
+    "flip_rho": 0.7,
+    "max_angle": 40.0,
+    "ratio_eps": 0.0001,
+    "model": {
+      "hidden": [
+        64,
+        64
+      ],
+      "dropout": 0.2,
+      "epochs": 60,
+      "weight_decay": 0.0001,
+      "T": 30,
+      "M": 5,
+      "B": 10,
+      "svm_max_train": 1500
+    },
+    "detectors": {
+      "batch": 50,
+      "target_far": 0.1,
+      "calib_len": null,
+      "calib_reps": 10,
+      "label_delay": 0,
+      "ks_window": 200
+    },
+    "evaluation": {
+      "W": 300,
+      "z": 3.0
+    },
+    "grid": {
+      "tabular_datasets": [
+        "credit",
+        "telco"
+      ],
+      "tabular_drifts": [
+        "none",
+        "covariate",
+        "sensor",
+        "real"
+      ],
+      "extra": [
+        [
+          "digits",
+          "none"
+        ],
+        [
+          "digits",
+          "covariate"
+        ],
+        [
+          "sea",
+          "none"
+        ],
+        [
+          "sea",
+          "real"
+        ]
+      ],
+      "models": [
+        "mcd",
+        "ens",
+        "bsvm"
+      ],
+      "abrupt": [
+        [
+          "credit",
+          "covariate"
+        ],
+        [
+          "credit",
+          "sensor"
+        ],
+        [
+          "digits",
+          "covariate"
+        ]
+      ]
+    },
+    "xai": {
+      "datasets": [
+        "credit",
+        "telco"
+      ],
+      "drifts": [
+        "covariate",
+        "sensor",
+        "real"
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "n_explain": 40,
+      "kernel_nsamples": 300,
+      "background": 40
+    }
+  },
+  "config_hash": "4135438ce7af",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "platform": "Linux-6.18.44-fc-v80-x86_64-with-glibc2.39",
+  "versions": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.6",
+    "torch": "2.14.1+cu130",
+    "river": "0.26.1",
+    "shap": "0.52.0",
+    "sklearn": "1.9.1"
+  },
+  "datasets": {
+    "credit": {
+      "file": "credit_default.csv",
+      "sha256": "4edce6da569b2c30788a85fd98a9bafb1a983e8ca1a7aac875dd7ff853cbd0bb",
+      "licence": "CC BY 4.0 (UCI Machine Learning Repository, id 350)"
+    },
+    "telco": {
+      "file": "telco_churn.csv",
+      "sha256": "16320c9c1ec72448db59aa0a26a0b95401046bef5d02fd3aeb906448e3055e91",
+      "licence": "Apache-2.0 (IBM sample data, github.com/IBM/telco-customer-churn-on-icp4d)"
+    },
+    "elec2": {
+      "file": "elec2.csv",
+      "sha256": "cdf901433885f29eca6911f70c0eeafb50d90596c879c30c5b99f5a2e8e734ff",
+      "licence": "Freely available for research (Harries 1999; distributed with MOA / scikit-multiflow, BSD-3)"
+    }
+  },
+  "wall_seconds": 179.9924931526184,
+  "note": "Full grid + XAI ran in one invocation (`python -m bdx.run_all --jobs 2`, ~2350 s on 2 CPU cores); the Elec2 and example stages were re-run with `--skip grid xai` after a statsmodels API fix (wall_seconds below is for that second invocation only). Same config and seeds."
+}
