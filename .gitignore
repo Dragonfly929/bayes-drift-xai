@@ -5,3 +5,4 @@ __pycache__/
 .streamlit/secrets.toml
 results_*/
 docs/article/_header.tex
+figures_*/

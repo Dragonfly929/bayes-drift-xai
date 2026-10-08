@@ -1,7 +1,7 @@
 """Run the full experimental grid of the paper and write every raw result to results/.
 
     python -m bdx.run_all                 # full grid (≈1 h on 2 CPU cores)
-    python -m bdx.run_all --quick         # 2 seeds, MC-Dropout only (≈5 min) — sanity check
+    python -m bdx.run_all --quick         # 2 seeds, MC-Dropout only (≈5-10 min) -> results_quick/
     python -m bdx.run_all --config my.yaml --out results_other
 
 Outputs (CSV, one row per unit of analysis):
@@ -102,12 +102,14 @@ def config_hash(cfg):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=os.path.join(D.ROOT, "config", "default.yaml"))
-    ap.add_argument("--out", default=os.path.join(D.ROOT, "results"))
+    ap.add_argument("--out", default=None, help="output folder (default: results/, or results_quick/ with --quick)")
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2)))
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--skip", nargs="*", default=[], help="parts to skip: grid xai elec2 example")
     a = ap.parse_args(argv)
     cfg = yaml.safe_load(open(a.config))
+    if a.out is None:   # a quick check never overwrites the paper's results
+        a.out = os.path.join(D.ROOT, "results_quick" if a.quick else "results")
     if a.quick:
         cfg["seeds"] = cfg["seeds"][:2]
         cfg["grid"]["models"] = ["mcd"]

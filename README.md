@@ -90,7 +90,8 @@ streamlit_app.py     interactive interface
    # Windows: .venv\Scripts\activate      macOS/Linux: source .venv/bin/activate
    pip install -r requirements.txt
    pytest -q                         # 8 tests, ~20 s
-   python -m bdx.run_all --quick     # 5-minute sanity run (2 seeds, MC-Dropout only) into results/
+   python -m bdx.run_all --quick     # 5-10 min sanity run (2 seeds, MC-Dropout only) into results_quick/
+   python -m bdx.analyze --res results_quick --fig figures_quick   # its tables and figures
    python -m bdx.run_all             # full grid (≈ 45-60 min on a 2-core laptop)
    python -m bdx.analyze             # tables, tests, figures
    python docs/article/build.py      # rebuild the article (needs pandoc; PDF needs xelatex)
