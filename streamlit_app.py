@@ -77,7 +77,7 @@ if dataset == "upload":
         target = st.sidebar.selectbox("Label column (what the model predicts)", cols, index=len(cols) - 1)
         # columns that would only add noise: identifiers and free text (almost one value per row)
         guess = [c for c in cols if c != target and (c.lower() in ("id", "index", "unnamed: 0") or c.lower().endswith("id")
-                 or (df_up[c].dtype == object and df_up[c].nunique() > 0.5 * len(df_up)))]
+                 or (not pd.api.types.is_numeric_dtype(df_up[c]) and df_up[c].nunique() > 0.5 * len(df_up)))]
         drop_cols = st.sidebar.multiselect("Columns to ignore (IDs, dates, free text)",
                                            [c for c in cols if c != target], default=guess)
         n_cls = df_up[target].nunique()
